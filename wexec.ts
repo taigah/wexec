@@ -64,19 +64,12 @@ while (true) {
     throw err
   }
   
-  let cooldown = 0
-  a:
   for await (const event of watcher) {
-    switch (event.kind) {
-      case 'modify':
-        if (noDebounce === false && debounce.try() === false) continue
-        // 10ms cooldown
-        cooldown = Date.now() + 10
-        info('restarting due to change...')
-        await run(command)
-        break
-      case 'remove':
-        break a
+    if (event.kind === 'remove') break
+    if (event.kind === 'modify') {
+      if (noDebounce === false && debounce.try() === false) continue
+      info('restarting due to change...')
+      await run(command)
     }
   }
 }
