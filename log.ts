@@ -3,9 +3,17 @@ const GREEN = '\x1b[32m'
 const RESET = '\x1b[0m'
 
 export function info (text: string) {
-  console.log(`${GREEN}[wexec] ${text}${RESET}`)
+  if (Deno.noColor === false) {
+    console.log(`${GREEN}[wexec] [info] ${text}${RESET}`)
+  } else {
+    console.log(`[wexec] [info] ${text}`)
+  }
 }
 
 export function warn (text: string) {
-  console.log(`${RED}[wexec] ${text}${RESET}`)
+  if (Deno.noColor === false) {
+    console.log(`${RED}[wexec] [warn] ${text}${RESET}`)
+  } else {
+    console.log(`[wexec] [warn] ${text}`)
+  }
 }
