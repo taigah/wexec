@@ -1,6 +1,6 @@
 # wexec
 
-A simple deno tool to execute a command on a certain file's update.
+A simple deno tool for executing a command on file modification.
 
 ## Installation
 
@@ -11,7 +11,7 @@ deno install --allow-read --allow-run https://raw.githubusercontent.com/taigah/w
 ## Usage
 
 ```bash
-wexec [file] [command]
+wexec [file or directory] [command]
 ```
 
 ## Example
