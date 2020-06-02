@@ -1,9 +1,8 @@
 import { info, warn } from './log.ts'
+import { help } from './help.ts'
 
 if (Deno.args.includes('-h') || Deno.args.includes('--help')) {
-  const file = await Deno.open('help.txt')
-  await Deno.copy(file, Deno.stdout)
-  file.close()
+  console.log(help)
   Deno.exit()
 }
 
