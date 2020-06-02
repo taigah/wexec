@@ -1,11 +1,21 @@
-export const help = `Execute a command when a file is modified.
+const description = `Execute a command when a file is modified.`
 
-Usage: wexec [options] <file> <command>
+const usage = `wexec [options] <file> <command>`
+
+const options = [
+  `-h --help       Print help`,
+  `--no-debounce   Disable debounce between modify events`
+].map(v => '  ' + v).join('\n')
+
+const example = `wexec file.ms "groff -ms file.ms -T pdf > file.pdf"`
+
+export const help = `${description}
+
+Usage: ${usage}
 
 Options:
-  -h --help       Print help
-  --no-debounce   Disable debounce between modify events
+${options}
 
-Example: wexec file.ms "groff -ms file.ms -T pdf > file.pdf"
+Example: ${example}
 
 `
