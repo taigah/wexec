@@ -1,8 +1,14 @@
 import { info, warn } from './log.ts'
 import { help } from './help.ts'
+import { VERSION } from './version.ts'
 
 if (Deno.args.includes('-h') || Deno.args.includes('--help')) {
   console.log(help)
+  Deno.exit()
+}
+
+if (Deno.args.includes('-v') || Deno.args.includes('--version')) {
+  console.log(`v${VERSION}`)
   Deno.exit()
 }
 
@@ -22,21 +28,30 @@ if (args.length !== 2) {
 
 const [ file, command ] = args
 
-async function run (command: string) {
+type Process = Deno.Process & { alive: boolean }
+
+function run (command: string): Process {
   info(`starting \`${command}\``)
   const proc = Deno.run({
     cmd: ['sh', '-c', command],
     stdin: 'null',
     stdout: 'inherit',
     stderr: 'inherit'
+  }) as Process
+  proc.status().then(status => {
+    proc.close()
+    proc.alive = false
+    // the process was killed
+    if (status.signal !== undefined) return
+
+    if (status.success) {
+      info(`clean exit - waiting for changes before restart`)
+    } else {
+      warn(`command failed - waiting for changes before restart`)
+    }
   })
-  const status = await proc.status()
-  proc.close()
-  if (status.success) {
-    info(`clean exit - waiting for changes before restart`)
-  } else {
-    warn(`command failed - waiting for changes before restart`)
-  }
+  proc.alive = true
+  return proc
 }
 
 const debounce = {
@@ -50,7 +65,8 @@ const debounce = {
   }
 }
 
-await run(command)
+const SIGTERM = 15
+let proc = run(command)
 
 while (true) {
   let watcher
@@ -68,8 +84,11 @@ while (true) {
     if (event.kind === 'remove') break
     if (event.kind === 'modify') {
       if (noDebounce === false && debounce.try() === false) continue
-      info('restarting due to change...')
-      await run(command)
+      info('restarting due to changes...')
+      if (proc.alive) {
+        proc.kill(SIGTERM)
+      }
+      proc = run(command)
     }
   }
 }

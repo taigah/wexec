@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-deno run --allow-read --allow-run wexec.ts "$@"
+deno run --allow-read --allow-run --unstable wexec.ts "$@"
