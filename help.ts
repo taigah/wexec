@@ -1,6 +1,6 @@
-const description = `Execute a command when a file is modified.`
+const description = `Execute a command on file change.`
 
-const usage = `wexec [options] <file> <command>`
+const usage = `wexec [options] <glob> <command>`
 
 const options = [
   `-h --help          Print help`,

@@ -1,6 +1,7 @@
 import { info, warn } from './log.ts'
 import { help } from './help.ts'
 import { VERSION } from './version.ts'
+import { isGlob, globToRegExp } from './deps.ts'
 
 if (Deno.args.includes('-h') || Deno.args.includes('--help')) {
   console.log(help)
@@ -23,10 +24,17 @@ for (const arg of Deno.args) {
 
 if (args.length !== 2) {
   console.error(`Bad number of arguments, excepted 2 and got ${args.length}`)
-  Deno.exit()
+  Deno.exit(1)
 }
 
-const [ file, command ] = args
+const [ glob, command ] = args
+
+if (!isGlob(glob)) {
+  console.error(`First argument should be a valid glob`)
+  Deno.exit(1)
+}
+
+const globRegExp = globToRegExp(glob, { extended: true })
 
 type Process = Deno.Process & { alive: boolean }
 
@@ -68,21 +76,26 @@ const debounce = {
 const SIGTERM = 15
 let proc = run(command)
 
+const cwd = Deno.cwd()
+
 while (true) {
   let watcher
   try {
-    watcher = Deno.watchFs(file)
+    watcher = Deno.watchFs(cwd)
   } catch (err) {
-    if (err.constructor === Deno.errors.NotFound) {
-      console.error(`File '${file}' not found`)
-      Deno.exit(1)
-    }
     throw err
   }
   
   for await (const event of watcher) {
     if (event.kind === 'remove') break
     if (event.kind === 'modify') {
+      if (!event.paths.some(path => {
+        // WARN: may not be secure
+        path = path.replace(cwd + '/', '')
+        return globRegExp.test(path)
+      })) {
+        continue
+      }
       if (noDebounce === false && debounce.try() === false) continue
       info('restarting due to changes...')
       if (proc.alive) {

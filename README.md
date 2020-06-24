@@ -1,6 +1,6 @@
 # wexec
 
-A simple deno tool for executing a command on file modification.
+A simple deno tool for executing a command on file change.
 
 ## Installation
 
